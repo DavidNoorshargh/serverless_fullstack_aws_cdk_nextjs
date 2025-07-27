@@ -1,16 +1,20 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as lambdaNodeJs from 'aws-cdk-lib/aws-lambda-nodejs'
+import * as apigateway from 'aws-cdk-lib/aws-apigateway'
 
 export class TempCdkStackStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    const lambdaFunc = new lambdaNodeJs.NodejsFunction(this, "timeOfDay", {
+      entry: "./lambda/timeOfDay.js",
+      handler: "index",
+      runtime: lambda.Runtime.NODEJS_20_X,
+    });
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'TempCdkStackQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    const restApi = new apigateway.RestApi(this, "timeOfDayRestAPI");
+    restApi.root.addMethod('GET', new apigateway.LambdaIntegration(lambdaFunc));
   }
 }
